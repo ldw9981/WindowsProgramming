@@ -15,10 +15,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (message == WM_DESTROY) 
 	{
-		PostQuitMessage(0);
+		PostQuitMessage(0); // WM_QUIT 메시지를 큐에 넣어줍니다.
 		return 0;
 	}
-
 	//우리가 직접 처리하지 않은 메시지는 DefWindowProc에 넘겨줘야 Windows가 기본 처리를 해줍니다.
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
@@ -48,10 +47,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ShowWindow(hWnd, nCmdShow); // 윈도우 보이기
 	UpdateWindow(hWnd);		 // 윈도우 업데이트
 
-	MSG msg = { 0 };
-	
-	while (GetMessage(&msg, NULL, 0, 0)) {
-		TranslateMessage(&msg);`
+	MSG msg;	// 메시지 구조체와 루프 
+	// GetMessage는 큐에 메시지가 없으면 대기(Block)함 ,WM_QUIT 메시지가 발생하면 0 을 반환
+	while (GetMessage(&msg, NULL, 0, 0))  
+	{
+		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 

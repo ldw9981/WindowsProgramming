@@ -126,7 +126,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PAINTSTRUCT ps;
 		HDC hDC = BeginPaint(hwnd, &ps);
 		const char* text = "윈도우 메시지출력 중";
-		TextOutA(hDC, 10, 10, text, strlen(text));
+		TextOutA(hDC, 10, 10, text, (int)strlen(text));
 					
 		const int CELL_SIZE = 300;     // 셀 크기
 		const int PADDING = 10;       // 셀 내부 여백
@@ -209,7 +209,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	UpdateWindow(hwnd);
 
 	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0) > 0)	// 메시지 루프
+	// 메시지 루프
+	while (GetMessage(&msg, NULL, 0, 0)) // GetMessage는 큐에 메시지가 없으면 대기(Block)함	
 	{
 		TranslateMessage(&msg);	// 이부분을 없애면	WM_CHAR 이벤트없음
 		DispatchMessage(&msg);  // 윈도우 프로시저로 메시지 전달
