@@ -41,7 +41,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		TEXT("MyWindowClass"),      // 클래스 이름
 		TEXT("My Basic Window"),    // 윈도우 타이틀
 		WS_OVERLAPPEDWINDOW,   // 윈도우 스타일
-		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+		CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, // 각종 스타일을 포함한	크기
 		NULL, NULL, hInstance, NULL);
 
 	ShowWindow(hWnd, nCmdShow); // 윈도우 보이기

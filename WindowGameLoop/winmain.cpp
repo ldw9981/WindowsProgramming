@@ -82,11 +82,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);	// 기본 아이콘 모양
 	RegisterClass(&wc);
 
+	// 원하는 크기가 조정되어 리턴
+	RECT rcClient = { 0, 0, (LONG)g_width, (LONG)g_height };
+	AdjustWindowRect(&rcClient, WS_OVERLAPPEDWINDOW, FALSE);
+
+	//생성
 	HWND hwnd = CreateWindow(
 		g_szClassName,
 		g_title,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, g_width, g_height,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		rcClient.right - rcClient.left, rcClient.bottom - rcClient.top,
 		NULL, NULL, hInstance, NULL);
 
 	ShowWindow(hwnd, nCmdShow);
