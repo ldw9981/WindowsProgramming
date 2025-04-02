@@ -110,7 +110,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	g_Bitmap = CreateCompatibleBitmap(g_ClientDC, g_width, g_height); // 메모리 영역생성
 	SelectObject(g_MemDC, g_Bitmap); // MemDC의 메모리영역 지정
 
-	//
+	// DeviceContext 생성및 HBitmap 연결
 	HDC hImageDC = CreateCompatibleDC(g_ClientDC); // 호환되는 DeviceContext 생성
 	HBITMAP hImageBitmap = (HBITMAP)LoadImage(
 		NULL,                    // 인스턴스 핸들 (파일이므로 NULL)
@@ -119,7 +119,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		0, 0,                    // 크기 자동 (원본 크기)
 		LR_LOADFROMFILE        // 외부 파일에서 로드
 	);	
-	BITMAP bmpInfo;
+	BITMAP bmpInfo; // 내부에 크기 정보가 있다.
 	GetObject(hImageBitmap, sizeof(BITMAP), &bmpInfo);
 
 
@@ -146,7 +146,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// Render()
 		// 전체 이미지 그대로 복사하기
-		BitBlt(g_MemDC, 0, 0, g_width, g_height, hImageDC, 0, 0, SRCCOPY);	
+		BitBlt(g_MemDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, hImageDC, 0, 0, SRCCOPY);
 
 		//특정 컬러(컬러키)를 제외하고 그리기
 		TransparentBlt(g_MemDC, bmpInfo.bmWidth, 0, bmpInfo.bmWidth, bmpInfo.bmHeight,

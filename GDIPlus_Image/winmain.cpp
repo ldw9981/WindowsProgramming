@@ -123,6 +123,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	
 	// 이미지 로드
 	g_pBitmap = new Gdiplus::Bitmap(L"../Resource/elf32.png");
+	UINT witdh = g_pBitmap->GetWidth();
+	UINT height = g_pBitmap->GetHeight();
+
 	if (g_pBitmap->GetLastStatus() != Ok)
 	{
 		MessageBox(hwnd, L"PNG 파일 로드 실패", L"오류", MB_ICONERROR);
@@ -145,7 +148,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		PatBlt(g_MemDC, 0, 0, g_width, g_height, BLACKNESS);
 
 		// Render()
-		g_pGraphics->DrawImage(g_pBitmap, 0, 0);
+		g_pGraphics->DrawImage(g_pBitmap, 0, 0, witdh, height);
 
 		// Renderer::EndDraw()
 		BitBlt(g_ClientDC, 0, 0, g_width, g_height, g_MemDC, 0, 0, SRCCOPY);
