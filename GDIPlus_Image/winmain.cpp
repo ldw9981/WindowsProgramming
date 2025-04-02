@@ -140,7 +140,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		PatBlt(g_BackBufferDC, 0, 0, g_width, g_height, BLACKNESS);
 
 		// Render()
-		g_pBackBufferGraphics->DrawImage(g_pImageBitmap, 0, 0, witdh, height);
+		g_pBackBufferGraphics->DrawImage(g_pImageBitmap, 0, 0);
 
 		// Renderer::EndDraw()
 		BitBlt(g_FrontBufferDC, 0, 0, g_width, g_height, g_BackBufferDC, 0, 0, SRCCOPY);
