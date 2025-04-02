@@ -10,9 +10,9 @@ int g_width = 1024;
 int g_height = 768;
 
 HWND g_hWnd;
-HDC g_ClientDC;    // 앞면 DC
-HDC g_MemDC;    // 뒷면 DC
-HBITMAP g_Bitmap;
+HDC g_FrontBufferDC;    // 앞면 DC
+HDC g_BackBufferDC;    // 뒷면 DC
+HBITMAP g_BackBufferBitmap;
 
 // 콘솔 초기화
 void InitConsole()
@@ -105,13 +105,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	UpdateWindow(hwnd);
 
 	////////Renderer::Initialize
-	g_ClientDC = GetDC(hwnd); //윈도우 클라이언트 영역의 DeviceContext얻기
-	g_MemDC = CreateCompatibleDC(g_ClientDC); // 호환되는 DeviceContext 생성
-	g_Bitmap = CreateCompatibleBitmap(g_ClientDC, g_width, g_height); // 메모리 영역생성
-	SelectObject(g_MemDC, g_Bitmap); // MemDC의 메모리영역 지정
+	g_FrontBufferDC = GetDC(hwnd); //윈도우 클라이언트 영역의 DeviceContext얻기
+	g_BackBufferDC = CreateCompatibleDC(g_FrontBufferDC); // 호환되는 DeviceContext 생성
+	g_BackBufferBitmap = CreateCompatibleBitmap(g_FrontBufferDC, g_width, g_height); // 메모리 영역생성
+	SelectObject(g_BackBufferDC, g_BackBufferBitmap); // MemDC의 메모리영역 지정
 
 	// DeviceContext 생성및 HBitmap 연결
-	HDC hImageDC = CreateCompatibleDC(g_ClientDC); // 호환되는 DeviceContext 생성
+	HDC hImageDC = CreateCompatibleDC(g_FrontBufferDC); // 호환되는 DeviceContext 생성
 	HBITMAP hImageBitmap = (HBITMAP)LoadImage(
 		NULL,                    // 인스턴스 핸들 (파일이므로 NULL)
 		L"../Resource/elf24.bmp",          // BMP 파일 경로
@@ -142,28 +142,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 
 		// Renderer::BeginDraw()
-		PatBlt(g_MemDC, 0, 0, g_width, g_height, BLACKNESS);
+		PatBlt(g_BackBufferDC, 0, 0, g_width, g_height, BLACKNESS);
 
 		// Render()
 		// 전체 이미지 그대로 복사하기
-		BitBlt(g_MemDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, hImageDC, 0, 0, SRCCOPY);
+		BitBlt(g_BackBufferDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, hImageDC, 0, 0, SRCCOPY);
 
 		//특정 컬러(컬러키)를 제외하고 그리기
-		TransparentBlt(g_MemDC, bmpInfo.bmWidth, 0, bmpInfo.bmWidth, bmpInfo.bmHeight,
+		TransparentBlt(g_BackBufferDC, bmpInfo.bmWidth, 0, bmpInfo.bmWidth, bmpInfo.bmHeight,
 			hImageDC, 0, 0, bmpInfo.bmWidth, bmpInfo.bmHeight, 
 			RGB(255,255,255));	// Msimg32.lib 링크 필요
 
 		// Renderer::EndDraw()
-		BitBlt(g_ClientDC, 0, 0, g_width, g_height, g_MemDC, 0, 0, SRCCOPY);
+		BitBlt(g_FrontBufferDC, 0, 0, g_width, g_height, g_BackBufferDC, 0, 0, SRCCOPY);
 	}
 
 	DeleteObject(hImageBitmap);
 	DeleteDC(hImageDC);
 
 	// Renderer::Uninitialize
-	DeleteObject(g_Bitmap);
-	DeleteDC(g_MemDC);
-	ReleaseDC(hwnd, g_ClientDC);
+	DeleteObject(g_BackBufferBitmap);
+	DeleteDC(g_BackBufferDC);
+	ReleaseDC(hwnd, g_FrontBufferDC);
 	//////////////////////////////////////////////////////////////////////////
 
 	UninitConsole();  // 콘솔 출력 해제

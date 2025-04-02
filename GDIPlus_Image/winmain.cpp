@@ -8,17 +8,17 @@ using namespace Gdiplus;
 
 // 전역
 ULONG_PTR g_GdiPlusToken;
-Gdiplus::Bitmap* g_pBitmap = nullptr;
-Gdiplus::Graphics* g_pGraphics = nullptr;
+Gdiplus::Bitmap* g_pImageBitmap = nullptr;
+Gdiplus::Graphics* g_pBackBufferGraphics = nullptr;
 
 LPCTSTR g_szClassName = TEXT("윈도우 클래스 이름");
 int g_width = 1024;
 int g_height = 768;
 
 HWND g_hWnd;
-HDC g_ClientDC;    // 앞면 DC
-HDC g_MemDC;    // 뒷면 DC
-HBITMAP g_MemBitmap;
+HDC g_FrontBufferDC;    // 앞면 DC
+HDC g_BackBufferDC;    // 뒷면 DC
+HBITMAP g_BackBufferBitmap;
 
 // 콘솔 초기화
 void InitConsole()
@@ -111,22 +111,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	UpdateWindow(hwnd);
 
 	////////Renderer::Initialize
-	g_ClientDC = GetDC(hwnd); //윈도우 클라이언트 영역의 DeviceContext얻기
-	g_MemDC = CreateCompatibleDC(g_ClientDC); // 호환되는 DeviceContext 생성
-	g_MemBitmap = CreateCompatibleBitmap(g_ClientDC, g_width, g_height); // 메모리 영역생성
-	SelectObject(g_MemDC, g_MemBitmap); // MemDC의 메모리영역 지정
+	g_FrontBufferDC = GetDC(hwnd); //윈도우 클라이언트 영역의 DeviceContext얻기
+	g_BackBufferDC = CreateCompatibleDC(g_FrontBufferDC); // 호환되는 DeviceContext 생성
+	g_BackBufferBitmap = CreateCompatibleBitmap(g_FrontBufferDC, g_width, g_height); // 메모리 영역생성
+	SelectObject(g_BackBufferDC, g_BackBufferBitmap); // MemDC의 메모리영역 지정
 
 	// GDI+ 초기화
 	GdiplusStartupInput gsi;
 	GdiplusStartup(&g_GdiPlusToken, &gsi, nullptr);
-	g_pGraphics = Graphics::FromHDC(g_MemDC); 
+	g_pBackBufferGraphics = Graphics::FromHDC(g_BackBufferDC); 
 	
 	// 이미지 로드
-	g_pBitmap = new Gdiplus::Bitmap(L"../Resource/elf32.png");
-	UINT witdh = g_pBitmap->GetWidth();
-	UINT height = g_pBitmap->GetHeight();
+	g_pImageBitmap = new Gdiplus::Bitmap(L"../Resource/elf32.png");
+	UINT witdh = g_pImageBitmap->GetWidth();
+	UINT height = g_pImageBitmap->GetHeight();
 
-	if (g_pBitmap->GetLastStatus() != Ok)
+	if (g_pImageBitmap->GetLastStatus() != Ok)
 	{
 		MessageBox(hwnd, L"PNG 파일 로드 실패", L"오류", MB_ICONERROR);
 		PostQuitMessage(0);
@@ -145,25 +145,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 
 		// Renderer::BeginDraw()
-		PatBlt(g_MemDC, 0, 0, g_width, g_height, BLACKNESS);
+		PatBlt(g_BackBufferDC, 0, 0, g_width, g_height, BLACKNESS);
 
 		// Render()
-		g_pGraphics->DrawImage(g_pBitmap, 0, 0, witdh, height);
+		g_pBackBufferGraphics->DrawImage(g_pImageBitmap, 0, 0, witdh, height);
 
 		// Renderer::EndDraw()
-		BitBlt(g_ClientDC, 0, 0, g_width, g_height, g_MemDC, 0, 0, SRCCOPY);
+		BitBlt(g_FrontBufferDC, 0, 0, g_width, g_height, g_BackBufferDC, 0, 0, SRCCOPY);
 	}
 
 	// GDI+ 해제
-	delete g_pBitmap;
-	delete g_pGraphics;
+	delete g_pImageBitmap;
+	delete g_pBackBufferGraphics;
 	GdiplusShutdown(g_GdiPlusToken);
 
 
 	// Renderer::Uninitialize
-	DeleteObject(g_MemBitmap);
-	DeleteDC(g_MemDC);
-	ReleaseDC(hwnd, g_ClientDC);
+	DeleteObject(g_BackBufferBitmap);
+	DeleteDC(g_BackBufferDC);
+	ReleaseDC(hwnd, g_FrontBufferDC);
 	//////////////////////////////////////////////////////////////////////////
 
 	UninitConsole();  // 콘솔 출력 해제
