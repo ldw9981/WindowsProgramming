@@ -4,13 +4,6 @@
 #include <gdiplus.h>
 #pragma comment(lib, "gdiplus.lib")
 
-using namespace Gdiplus;
-
-// 전역
-ULONG_PTR g_GdiPlusToken;
-Gdiplus::Bitmap* g_pImageBitmap = nullptr;
-Gdiplus::Graphics* g_pBackBufferGraphics = nullptr;
-
 LPCTSTR g_szClassName = TEXT("윈도우 클래스 이름");
 int g_width = 1024;
 int g_height = 768;
@@ -117,16 +110,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SelectObject(g_BackBufferDC, g_BackBufferBitmap); // MemDC의 메모리영역 지정
 
 	// GDI+ 초기화
-	GdiplusStartupInput gsi;
-	GdiplusStartup(&g_GdiPlusToken, &gsi, nullptr);
-	g_pBackBufferGraphics = Graphics::FromHDC(g_BackBufferDC); 
-	
-	// 이미지 로드
-	g_pImageBitmap = new Gdiplus::Bitmap(L"../Resource/elf32.png");
+	ULONG_PTR g_GdiPlusToken;
+	Gdiplus::GdiplusStartupInput gsi;
+	Gdiplus::GdiplusStartup(&g_GdiPlusToken, &gsi, nullptr);
+	Gdiplus::Graphics* g_pBackBufferGraphics = Gdiplus::Graphics::FromHDC(g_BackBufferDC);
+	Gdiplus::Bitmap* g_pImageBitmap = new Gdiplus::Bitmap(L"../Resource/elf32.png");
 	UINT witdh = g_pImageBitmap->GetWidth();
 	UINT height = g_pImageBitmap->GetHeight();
 
-	if (g_pImageBitmap->GetLastStatus() != Ok)
+	if (g_pImageBitmap->GetLastStatus() != Gdiplus::Ok)
 	{
 		MessageBox(hwnd, L"PNG 파일 로드 실패", L"오류", MB_ICONERROR);
 		PostQuitMessage(0);
@@ -154,13 +146,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		BitBlt(g_FrontBufferDC, 0, 0, g_width, g_height, g_BackBufferDC, 0, 0, SRCCOPY);
 	}
 
+	// Renderer::Uninitialize
+	
 	// GDI+ 해제
 	delete g_pImageBitmap;
 	delete g_pBackBufferGraphics;
-	GdiplusShutdown(g_GdiPlusToken);
+	Gdiplus::GdiplusShutdown(g_GdiPlusToken);
 
-
-	// Renderer::Uninitialize
 	DeleteObject(g_BackBufferBitmap);
 	DeleteDC(g_BackBufferDC);
 	ReleaseDC(hwnd, g_FrontBufferDC);
